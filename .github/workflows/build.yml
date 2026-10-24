@@ -1,0 +1,111 @@
+name: Build A.T.S for every platform
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: Expand-Archive -Path ats-sources.zip -DestinationPath . -Force
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r desktop/requirements.txt pyinstaller
+      - run: >
+          pyinstaller --onefile --noconsole --name ATS-Guard
+          --hidden-import comtypes --hidden-import win32timezone
+          --collect-all pycaw
+          desktop/ats_local_guard.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATS-Guard-Windows
+          path: dist/ATS-Guard.exe
+
+  linux-binary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -q ats-sources.zip
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: sudo apt-get update && sudo apt-get install -y python3-tk xdotool pulseaudio-utils
+      - run: pip install -r desktop/requirements.txt pyinstaller
+      - run: pyinstaller --onefile --name ATS-Guard-Linux desktop/ats_local_guard.py
+      - run: chmod +x dist/ATS-Guard-Linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATS-Guard-Linux
+          path: dist/ATS-Guard-Linux
+
+  macos-app:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -q ats-sources.zip
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r desktop/requirements.txt pyinstaller
+      - run: pyinstaller --windowed --name ATS-Guard desktop/ats_local_guard.py
+      - run: ditto -c -k --keepParent dist/ATS-Guard.app ATS-Guard-macOS.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATS-Guard-macOS
+          path: ATS-Guard-macOS.zip
+
+  android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -q ats-sources.zip
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: "8.9" }
+      - run: gradle assembleDebug
+        working-directory: android
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk ATS-Guard.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ATS-Guard-Android
+          path: ATS-Guard.apk
+
+  ios-compile-check:
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -q ats-sources.zip
+      - run: brew install xcodegen
+      - run: xcodegen generate
+        working-directory: ios
+      - run: >
+          xcodebuild -project ATSGuard.xcodeproj -scheme ATSGuard
+          -sdk iphonesimulator -configuration Debug
+          CODE_SIGNING_ALLOWED=NO build
+        working-directory: ios
+
+  publish-release:
+    needs: [windows-exe, linux-binary, macos-app, android-apk]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip -q ats-sources.zip
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+      - run: zip -r release/ATS-Guard-iOS-source.zip ios -x '*.DS_Store'
+      - run: ls -la release
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: A.T.S latest build
+          make_latest: true
+          files: release/*
