@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A.T.S — Anti-Teaming System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --bg: #000000;
+    --bg-raise: #0B0B0B;
+    --panel: #141414;
+    --panel-2: #0E0E0E;
+    --border: #333333;
+    --border-soft: #1E1E1E;
+    --text: #EDEDED;
+    --text-dim: #A6A6A6;
+    --text-faint: #8A8A8A;
+    --accent: #EA3B2A;
+    --accent-strong: #D42E1D;
+    --steel: #9B9B9B;
+    --red: #FF6B5E;
+    --radius: 6px;
+    --serif-mono: 'JetBrains Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:inherit;}
+
+  img,svg{display:block; max-width:100%;}
+
+  .wrap{
+    max-width:1120px;
+    margin:0 auto;
+    padding:0 28px;
+  }
+
+  ::selection{ background:var(--accent); color:#fff; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+
+  /* ---------- top bar ---------- */
+
+  header.topbar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(0,0,0,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border-soft);
+  }
+  .topbar-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px;
+    max-width:1120px; margin:0 auto;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-weight:700; font-size:17px; letter-spacing:0.01em;
+  }
+  .brand-mark{
+    height:46px;
+    width:auto;
+    display:block;
+  }
+  nav.toplinks{
+    display:flex; align-items:center; gap:28px;
+    font-size:14px; color:var(--text-dim);
+  }
+  nav.toplinks a{ text-decoration:none; transition:color .15s ease; }
+  nav.toplinks a:hover{ color:var(--text); }
+  .btn-ghost-sm{
+    border:1px solid var(--border);
+    padding:8px 16px;
+    border-radius:5px;
+    font-size:14px;
+    text-decoration:none;
+    color:var(--text);
+    transition:border-color .15s ease, background .15s ease;
+    white-space:nowrap;
+  }
+  .btn-ghost-sm:hover{ border-color:var(--accent); background:rgba(234,59,42,0.10); }
+
+  @media (max-width:760px){
+    nav.toplinks a.hide-mobile{ display:none; }
+  }
+
+  /* ---------- hero ---------- */
+
+  .hero{
+    padding:76px 0 96px;
+  }
+  .hero-grid > div{
+    max-width:640px;
+  }
+
+  .kicker{
+    font-family:var(--serif-mono);
+    font-size:12.5px;
+    color:var(--text-faint);
+    margin-bottom:20px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .kicker .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 8px var(--accent);
+  }
+
+  h1{
+    font-size:clamp(32px, 4.4vw, 50px);
+    line-height:1.12;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    margin-bottom:22px;
+    max-width:15ch;
+  }
+
+  .hero-sub{
+    font-size:17px;
+    color:var(--text-dim);
+    max-width:44ch;
+    margin-bottom:32px;
+  }
+
+  .hero-ctas{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:36px; }
+
+  .btn-primary{
+    background:var(--accent-strong);
+    color:#fff;
+    border:none;
+    padding:13px 22px;
+    border-radius:5px;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-block;
+    transition:filter .15s ease, transform .15s ease;
+  }
+  .btn-primary:hover{ filter:brightness(1.08); transform:translateY(-1px); }
+
+  .btn-secondary{
+    background:transparent;
+    color:var(--text);
+    border:1px solid var(--border);
+    padding:13px 22px;
+    border-radius:5px;
+    font-weight:500;
+    font-size:15px;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-block;
+    transition:border-color .15s ease;
+  }
+  .btn-secondary:hover{ border-color:var(--text-dim); }
+
+  .hero-note{
+    font-size:13px;
+    color:var(--text-faint);
+    border-left:2px solid var(--border);
+    padding-left:12px;
+  }
+
+  /* ---------- section shell ---------- */
+
+  section{ padding:88px 0; border-top:1px solid var(--border-soft); }
+
+  .section-head{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:48px;
+    margin-bottom:52px;
+  }
+  @media (max-width:800px){
+    .section-head{ grid-template-columns:1fr; gap:16px; }
+  }
+  .section-head h2{
+    font-size:clamp(24px, 3vw, 32px);
+    font-weight:700;
+    line-height:1.2;
+    letter-spacing:-0.01em;
+  }
+  .section-head p{
+    color:var(--text-dim);
+    font-size:15.5px;
+    max-width:52ch;
+    align-self:start;
+  }
+
+  /* ---------- problem section ---------- */
+
+  .problem-body{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:48px;
+  }
+  @media (max-width:800px){ .problem-body{ grid-template-columns:1fr; } }
+  .problem-copy p{
+    color:var(--text-dim);
+    font-size:16px;
+    max-width:60ch;
+    margin-bottom:18px;
+  }
+  .problem-copy p:last-child{ margin-bottom:0; }
+  .problem-copy strong{ color:var(--text); font-weight:600; }
+
+  /* ---------- how it works ---------- */
+
+  .steps{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--border-soft);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  @media (max-width:700px){ .steps{ grid-template-columns:1fr; } }
+  .step{
+    background:var(--bg);
+    padding:30px 28px;
+  }
+  .step-num{
+    font-family:var(--serif-mono);
+    font-size:13px;
+    color:var(--accent);
+    margin-bottom:14px;
+  }
+  .step h3{ font-size:18px; font-weight:600; margin-bottom:10px; }
+  .step p{ color:var(--text-dim); font-size:14.5px; }
+
+  /* ---------- quick chat bank ---------- */
+
+  .phrase-grid{
+    display:flex; flex-wrap:wrap; gap:10px;
+  }
+  .phrase{
+    font-family:var(--serif-mono);
+    font-size:13px;
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-radius:20px;
+    color:var(--text-dim);
+    background:var(--panel-2);
+  }
+  .phrase.blocked{
+    border-color:rgba(255,107,94,0.3);
+    color:var(--red);
+    text-decoration:line-through;
+    opacity:0.65;
+  }
+  .phrase-legend{
+    margin-top:20px;
+    display:flex; gap:24px; flex-wrap:wrap;
+    font-size:13px; color:var(--text-faint);
+  }
+  .phrase-legend span{ display:flex; align-items:center; gap:7px; }
+  .legend-dot{ width:9px; height:9px; border-radius:2px; }
+
+  /* ---------- platform badges ---------- */
+
+  .platform-badge{
+    width:44px; height:44px;
+    border:1.5px solid var(--border);
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif-mono);
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:0.02em;
+    color:var(--text-dim);
+    margin-bottom:14px;
+  }
+  .platform-badge.ready{ border-color:var(--accent); color:var(--accent); }
+  .platform-badge.dev{ border-color:var(--steel); color:var(--steel); }
+
+  .platform-grid details{ margin-top:12px; }
+  .platform-grid summary{
+    font-family:var(--serif-mono);
+    font-size:11.5px;
+    color:var(--text-faint);
+    cursor:pointer;
+    user-select:none;
+  }
+  .platform-grid summary:hover{ color:var(--text-dim); }
+  .platform-grid details p{
+    margin-top:8px;
+    font-size:12.5px;
+    color:var(--text-faint);
+    line-height:1.5;
+  }
+
+  .dl-btn{
+    display:block;
+    width:100%;
+    background:var(--accent-strong);
+    color:#fff;
+    font-weight:700;
+    font-size:15px;
+    padding:16px 18px;
+    border-radius:3px;
+    margin-top:16px;
+    font-family:var(--sans);
+    border:none;
+    cursor:pointer;
+    text-align:center;
+  }
+  .dl-btn:hover:not(:disabled){ filter:brightness(1.08); }
+  a.dl-btn{ text-decoration:none; }
+  .dl-fallback{ margin-top:20px; font-size:13px; color:var(--text-faint); }
+  .dl-fallback a{ color:var(--text-dim); text-decoration:underline; }
+  .dl-btn:disabled{ background:var(--border); color:var(--text-faint); cursor:default; }
+  .dl-caption{ font-size:11.5px; color:var(--text-faint); margin-top:8px; }
+
+  .region-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:1px;
+    background:var(--border-soft);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  @media (max-width:760px){ .region-grid{ grid-template-columns:1fr; } }
+  .region{
+    background:var(--bg);
+    padding:28px 26px;
+  }
+  .region-code{
+    font-family:var(--serif-mono);
+    font-size:12px;
+    color:var(--text-faint);
+    margin-bottom:6px;
+  }
+  .region h3{ font-size:19px; font-weight:600; margin-bottom:14px; }
+  .region-status{
+    display:inline-flex; align-items:center; gap:7px;
+    font-family:var(--serif-mono);
+    font-size:12px;
+    color:var(--steel);
+    margin-bottom:14px;
+  }
+  .region-status .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--steel);
+  }
+  .region p{ font-size:13.5px; color:var(--text-dim); }
+
+  .platform-grid{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:1px;
+    background:var(--border-soft);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .platform-grid .region{ padding:24px 20px; }
+  .platform-grid .region h3{ font-size:17px; }
+  @media (max-width:920px){
+    .platform-grid{ grid-template-columns:repeat(3, 1fr); }
+  }
+  @media (max-width:600px){
+    .platform-grid{ grid-template-columns:1fr; }
+  }
+
+  /* ---------- final cta ---------- */
+
+  .cta-band{
+    text-align:left;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:48px 40px;
+    display:flex; justify-content:space-between; align-items:center; gap:32px;
+    flex-wrap:wrap;
+  }
+  .cta-band h2{ font-size:26px; font-weight:700; max-width:20ch; }
+  .cta-band p{ color:var(--text-dim); font-size:14.5px; margin-top:8px; max-width:40ch; }
+
+  /* ---------- footer ---------- */
+
+  footer{
+    border-top:1px solid var(--border-soft);
+    padding:36px 0 48px;
+  }
+  .footer-inner{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:16px;
+    font-size:13px;
+    color:var(--text-faint);
+  }
+  .footer-links{ display:flex; gap:22px; }
+  .footer-links a{ text-decoration:none; color:var(--text-faint); }
+  .footer-links a:hover{ color:var(--text-dim); }
+
+
+  /* ---------- pictures ---------- */
+  .hero-grid{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,520px); gap:56px; align-items:center; }
+  .hero-grid > div:first-child{ max-width:640px; }
+  .hero-grid > div.hero-art{ max-width:none; }
+  @media (max-width:960px){ .hero-grid{ grid-template-columns:1fr; gap:44px; } }
+  .art{ width:100%; height:auto; }
+  .hero-art .art{ filter:drop-shadow(0 24px 60px rgba(234,59,42,0.14)); }
+  .step-art{ width:56px; height:56px; margin-bottom:18px; }
+  .shots{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; align-items:stretch; }
+  @media (max-width:900px){ .shots{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:520px){ .shots{ grid-template-columns:1fr; } }
+  .shots figure{ background:var(--panel-2); border:1px solid var(--border-soft); border-radius:var(--radius); padding:22px 18px 16px; }
+  .shots figcaption{ font-size:13.5px; color:var(--text-dim); margin-top:14px; line-height:1.5; }
+  .shots figcaption b{ color:var(--text); font-weight:600; display:block; margin-bottom:2px; }
+  .shots figure svg{ margin:0 auto; }
+  .shots figure.phone svg{ max-width:230px; }
+
+  /* ---------- pricing ---------- */
+  .plans{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; align-items:stretch; }
+  @media (max-width:900px){ .plans{ grid-template-columns:1fr; max-width:460px; } }
+  .plan{ background:var(--panel-2); border:1px solid var(--border-soft); border-radius:var(--radius); padding:30px 26px; display:flex; flex-direction:column; position:relative; }
+  .plan.featured{ border-color:var(--accent); box-shadow:0 0 0 1px rgba(234,59,42,0.25), 0 20px 60px rgba(234,59,42,0.10); }
+  .plan-tag{ position:absolute; top:-12px; left:26px; background:var(--accent-strong); color:#fff; font-family:var(--serif-mono); font-size:11.5px; padding:4px 10px; border-radius:20px; }
+  .plan h3{ font-size:20px; font-weight:700; margin-bottom:6px; }
+  .plan-for{ color:var(--text-dim); font-size:14px; min-height:42px; }
+  .plan-price{ margin:20px 0 22px; display:flex; align-items:baseline; gap:6px; }
+  .plan-price b{ font-size:40px; font-weight:700; letter-spacing:-0.02em; }
+  .plan-price span{ color:var(--text-faint); font-size:14px; }
+  .plan ul{ list-style:none; margin:0 0 28px; padding:0; display:grid; gap:12px; flex:1; }
+  .plan li{ font-size:14.5px; color:var(--text); display:flex; gap:10px; line-height:1.45; }
+  .plan li::before{ content:""; flex:none; width:16px; height:16px; margin-top:2px; border-radius:50%; background:rgba(234,59,42,0.14) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.3l2.3 2.3 4.7-5' fill='none' stroke='%23FF6B5E' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat; }
+  .plan li.prev{ color:var(--text-dim); }
+  .plan li.prev::before{ background-color:#222; }
+  .plan a.plan-btn{ display:block; text-align:center; text-decoration:none; padding:14px 18px; border-radius:var(--radius); font-weight:600; font-size:15px; border:1px solid var(--border); color:var(--text); }
+  .plan a.plan-btn:hover{ border-color:var(--text-dim); }
+  .plan.featured a.plan-btn{ background:var(--accent-strong); border-color:var(--accent-strong); color:#fff; }
+  .plan.featured a.plan-btn:hover{ filter:brightness(1.08); }
+  .plan span.plan-btn.soon{ display:block; text-align:center; padding:14px 18px; border-radius:var(--radius); font-weight:600; font-size:15px; border:1px dashed var(--border); color:var(--text-faint); cursor:default; }
+  .plans-note{ margin-top:22px; color:var(--text-faint); font-size:13.5px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <img class="brand-mark" src="data:image/png;base64,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" alt="A.T.S logo: muted microphone">
+      Anti-Teaming System
+    </div>
+    <nav class="toplinks">
+      <a href="#how" class="hide-mobile">How it works</a>
+      <a href="#regions" class="hide-mobile">Regions</a>
+      <a href="#platforms" class="hide-mobile">Platforms</a>
+      <a href="#pricing" class="hide-mobile">Pricing</a>
+      <a href="#beta" class="btn-ghost-sm">Request beta access</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero" style="border-top:none;">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="kicker"><span class="dot"></span>BUILT FOR COMPETITIVE AMONG US LOBBIES</div>
+        <h1>Nobody wins a game from a group chat.</h1>
+        <p class="hero-sub">A.T.S. gives tournament hosts a way to keep the game fair: external voice and messaging apps stay locked out once the game starts, and every player falls back to a shared, game-safe quick-chat vocabulary.</p>
+        <div class="hero-ctas">
+          <a href="#beta" class="btn-primary">Request beta access</a>
+          <a href="#how" class="btn-secondary">See how it works</a>
+        </div>
+        <p class="hero-note">Currently forming closed betas for USA, Europe, and Asia tournament circuits.</p>
+      </div>
+      <div class="hero-art">
+        <svg class="art" viewBox="0 0 520 380" role="img" aria-label="A.T.S Guard desktop window showing Discord muted and minimized during a game" font-family="Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+  <rect x="1" y="1" width="518" height="378" rx="14" fill="#0B0B0B" stroke="#333"/>
+  <path d="M1 15a14 14 0 0 1 14-14h490a14 14 0 0 1 14 14v26H1z" fill="#141414"/>
+  <line x1="1" y1="41" x2="519" y2="41" stroke="#262626"/>
+  <circle cx="24" cy="21" r="5" fill="#333"/><circle cx="42" cy="21" r="5" fill="#333"/><circle cx="60" cy="21" r="5" fill="#EA3B2A"/>
+  <text x="260" y="25" text-anchor="middle" fill="#A6A6A6" font-size="12.5">A.T.S Guard</text>
+
+  <text x="28" y="76" fill="#8A8A8A" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">GAME STATUS</text>
+  <rect x="28" y="86" width="464" height="64" rx="10" fill="#141414" stroke="#2a2a2a"/>
+  <circle cx="54" cy="118" r="7" fill="#EA3B2A"/><circle cx="54" cy="118" r="13" fill="none" stroke="#EA3B2A" stroke-opacity=".35"/>
+  <text x="78" y="114" fill="#EDEDED" font-size="17" font-weight="700">Game in progress — locked</text>
+  <text x="78" y="134" fill="#A6A6A6" font-size="12.5">Phase: TASKS · Host synced · Region NA-1</text>
+  <rect x="392" y="104" width="86" height="28" rx="14" fill="#EA3B2A" fill-opacity=".14" stroke="#EA3B2A" stroke-opacity=".6"/>
+  <text x="435" y="122" text-anchor="middle" fill="#FF6B5E" font-size="11.5" font-weight="600" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">LOCKED</text>
+
+  <text x="28" y="180" fill="#8A8A8A" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">APPS FOUND ON THIS PC</text>
+  <g>
+    <rect x="28" y="190" width="464" height="46" rx="9" fill="#101010" stroke="#262626"/>
+    <rect x="42" y="201" width="24" height="24" rx="7" fill="#222"/><path d="M48 208h12M48 213h12M48 218h8" stroke="#9B9B9B" stroke-width="1.6" stroke-linecap="round"/>
+    <text x="78" y="218" fill="#EDEDED" font-size="14" font-weight="600">Discord</text>
+    <rect x="352" y="201" width="126" height="24" rx="12" fill="#EA3B2A" fill-opacity=".14"/>
+    <text x="415" y="217" text-anchor="middle" fill="#FF6B5E" font-size="11.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">muted · minimized</text>
+  </g>
+  <g>
+    <rect x="28" y="244" width="464" height="46" rx="9" fill="#101010" stroke="#262626"/>
+    <rect x="42" y="255" width="24" height="24" rx="7" fill="#222"/><path d="M48 262l12 4-12 4 3-4z" fill="#9B9B9B"/>
+    <text x="78" y="272" fill="#EDEDED" font-size="14" font-weight="600">Telegram</text>
+    <rect x="352" y="255" width="126" height="24" rx="12" fill="#EA3B2A" fill-opacity=".14"/>
+    <text x="415" y="271" text-anchor="middle" fill="#FF6B5E" font-size="11.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">muted · minimized</text>
+  </g>
+  <g>
+    <rect x="28" y="298" width="464" height="46" rx="9" fill="#101010" stroke="#262626"/>
+    <rect x="42" y="309" width="24" height="24" rx="7" fill="#222"/><circle cx="54" cy="321" r="6" fill="none" stroke="#9B9B9B" stroke-width="1.6"/>
+    <text x="78" y="326" fill="#EDEDED" font-size="14" font-weight="600">Among Us</text>
+    <rect x="388" y="309" width="90" height="24" rx="12" fill="#262626"/>
+    <text x="433" y="325" text-anchor="middle" fill="#A6A6A6" font-size="11.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">allowed</text>
+  </g>
+  <text x="28" y="367" fill="#8A8A8A" font-size="11" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">Everything reopens when the host ends the game.</text>
+</svg>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap problem-body">
+      <h2 style="font-size:26px; font-weight:700; line-height:1.25;">The game only stays fair while the comms do.</h2>
+      <div class="problem-copy">
+        <p>A sighted crewmate who quietly texts an impostor's name to the rest of the team hasn't broken any in-game rule — they've just stepped outside the game entirely. Discord calls, side-channel DMs, and open voice apps turn a ten-player social deduction game into a much smaller, much less interesting one.</p>
+        <p>Most communities handle this on the honor system, which works until it doesn't — especially once prize pools or rankings are on the line. <strong>A.T.S. is built to make that honor system enforceable</strong>, without banning voice chat entirely: players still talk freely before and after games, they just lose the side channel for the sixty seconds it actually matters.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>How the lock works</h2>
+        <p>Four phases, all tied to the game clock — nothing to remember, nothing for players to toggle themselves.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <svg class="step-art" viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="1" width="54" height="54" rx="14" fill="#141414" stroke="#333"/><path d="M22 24a6 6 0 0 1 12 0v6a6 6 0 0 1-12 0z" stroke="#EDEDED" stroke-width="2.2"/><path d="M18 30a10 10 0 0 0 20 0M28 40v5" stroke="#9B9B9B" stroke-width="2.2"/></svg>
+          <div class="step-num">01 — Pre-lobby</div>
+          <h3>Everyone's comms stay open</h3>
+          <p>Before the host starts the game, voice apps and messaging clients work exactly as normal. A.T.S. only ever activates once a game begins.</p>
+        </div>
+        <div class="step">
+          <svg class="step-art" viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="1" width="54" height="54" rx="14" fill="#141414" stroke="#333"/><path d="M22 24a6 6 0 0 1 12 0v6a6 6 0 0 1-12 0z" stroke="#EDEDED" stroke-width="2.2"/><path d="M18 30a10 10 0 0 0 20 0M28 40v5" stroke="#9B9B9B" stroke-width="2.2"/><path d="M15 15l26 26" stroke="#EA3B2A" stroke-width="3"/></svg>
+          <div class="step-num">02 — Game start</div>
+          <h3>Tasks stay quiet</h3>
+          <p>The instant the host starts the game, every connected player's A.T.S. companion mutes and minimizes flagged voice and messaging apps — same as a normal task phase, there's nothing to say yet.</p>
+        </div>
+        <div class="step">
+          <svg class="step-art" viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="1" width="54" height="54" rx="14" fill="#141414" stroke="#333"/><path d="M16 19h24a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H29l-7 6v-6h-6a3 3 0 0 1-3-3V22a3 3 0 0 1 3-3z" stroke="#EDEDED" stroke-width="2.2" transform="translate(-0 -2)"/><path d="M21 26h14M21 31h9" stroke="#EA3B2A" stroke-width="2.2"/></svg>
+          <div class="step-num">03 — Discussion phases</div>
+          <h3>Quick chat opens, then closes again</h3>
+          <p>Gathering to discuss opens the host's curated quick-chat set for talk and voting. The moment that ends, quick chat closes and play drops straight back into a locked, silent task phase.</p>
+        </div>
+        <div class="step">
+          <svg class="step-art" viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="1" width="54" height="54" rx="14" fill="#141414" stroke="#333"/><rect x="18" y="26" width="20" height="15" rx="3" stroke="#EDEDED" stroke-width="2.2"/><path d="M23 26v-5a5 5 0 0 1 9.5-2" stroke="#EA3B2A" stroke-width="2.2"/></svg>
+          <div class="step-num">04 — Game end</div>
+          <h3>Everything reopens</h3>
+          <p>The moment the game ends, external comms and free text both return automatically. No manual unlock, no admin needed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screens">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>See it in action</h2>
+        <p>The same guard runs on your phone. Setup is one screen: accept the terms, enter your Among Us name. Then it locks down when the game starts and reopens when it ends.</p>
+      </div>
+      <div class="shots">
+        
+        <figure class="phone"><svg class="art" viewBox="0 0 240 460" role="img" aria-label="A.T.S setup screen asking for an Among Us username and acceptance of the terms" font-family="Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+  <rect x="1" y="1" width="238" height="458" rx="30" fill="#0B0B0B" stroke="#3a3a3a" stroke-width="2"/>
+  <rect x="9" y="9" width="222" height="442" rx="23" fill="#000"/>
+  <rect x="88" y="16" width="64" height="6" rx="3" fill="#1c1c1c"/>
+  
+  <text x="28" y="62" fill="#EDEDED" font-size="19" font-weight="700">Welcome to A.T.S</text>
+  <text x="28" y="82" fill="#A6A6A6" font-size="11.5">One quick setup, then you're in.</text>
+  <text x="28" y="116" fill="#8A8A8A" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">AMONG US USERNAME</text>
+  <rect x="28" y="124" width="184" height="38" rx="9" fill="#101010" stroke="#EA3B2A" stroke-opacity=".7"/>
+  <text x="40" y="148" fill="#EDEDED" font-size="13">YourName</text>
+  <text x="28" y="196" fill="#8A8A8A" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">TERMS &amp; LICENSE</text>
+  <rect x="28" y="204" width="184" height="104" rx="9" fill="#101010" stroke="#262626"/>
+  <path d="M40 222h160M40 234h140M40 246h156M40 258h120M40 270h150M40 282h100" stroke="#2c2c2c" stroke-width="5" stroke-linecap="round"/>
+  <rect x="28" y="326" width="18" height="18" rx="5" fill="#EA3B2A"/><path d="M33 335l4 4 7-8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="54" y="339" fill="#A6A6A6" font-size="11.5">I accept the terms and license</text>
+  <rect x="28" y="370" width="184" height="42" rx="10" fill="#D42E1D"/>
+  <text x="120" y="396" text-anchor="middle" fill="#fff" font-size="14" font-weight="600">Continue</text>
+  <rect x="88" y="438" width="64" height="4" rx="2" fill="#333"/>
+
+</svg><figcaption><b>First-run setup</b>Accept the license and enter your Among Us username. That's all.</figcaption></figure><figure class="phone"><svg class="art" viewBox="0 0 240 460" role="img" aria-label="A.T.S phone screen showing the lock active during a game" font-family="Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+  <rect x="1" y="1" width="238" height="458" rx="30" fill="#0B0B0B" stroke="#3a3a3a" stroke-width="2"/>
+  <rect x="9" y="9" width="222" height="442" rx="23" fill="#000"/>
+  <rect x="88" y="16" width="64" height="6" rx="3" fill="#1c1c1c"/>
+  <text x="28" y="62" fill="#EDEDED" font-size="19" font-weight="700">Game locked</text>
+  <text x="28" y="82" fill="#A6A6A6" font-size="11.5">Phase: TASKS · Host synced</text>
+  <circle cx="120" cy="150" r="42" fill="#EA3B2A" fill-opacity=".1" stroke="#EA3B2A" stroke-opacity=".5"/>
+  <rect x="104" y="146" width="32" height="26" rx="5" fill="none" stroke="#EDEDED" stroke-width="3"/>
+  <path d="M110 146v-8a10 10 0 0 1 20 0v8" fill="none" stroke="#EA3B2A" stroke-width="3" stroke-linecap="round"/>
+  <text x="28" y="228" fill="#8A8A8A" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">BLOCKED RIGHT NOW</text>
+  <rect x="28" y="238" width="184" height="36" rx="9" fill="#101010" stroke="#262626"/><text x="40" y="261" fill="#EDEDED" font-size="13">Discord</text><text x="200" y="261" text-anchor="end" fill="#FF6B5E" font-size="10.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">blocked</text>
+  <rect x="28" y="282" width="184" height="36" rx="9" fill="#101010" stroke="#262626"/><text x="40" y="305" fill="#EDEDED" font-size="13">WhatsApp</text><text x="200" y="305" text-anchor="end" fill="#FF6B5E" font-size="10.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">blocked</text>
+  <rect x="28" y="326" width="184" height="36" rx="9" fill="#101010" stroke="#262626"/><text x="40" y="349" fill="#EDEDED" font-size="13">Telegram</text><text x="200" y="349" text-anchor="end" fill="#FF6B5E" font-size="10.5" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">blocked</text>
+  <text x="120" y="398" text-anchor="middle" fill="#8A8A8A" font-size="10">Open one and you go back to Among Us.</text>
+  <rect x="88" y="438" width="64" height="4" rx="2" fill="#333"/>
+</svg><figcaption><b>Lock screen</b>Flagged apps are blocked for the whole game and reopen when the host ends it.</figcaption></figure>
+        <figure class="phone"><svg class="art" viewBox="0 0 240 460" role="img" aria-label="A.T.S quick chat list of approved phrases during a meeting" font-family="Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+  <rect x="1" y="1" width="238" height="458" rx="30" fill="#0B0B0B" stroke="#3a3a3a" stroke-width="2"/>
+  <rect x="9" y="9" width="222" height="442" rx="23" fill="#000"/>
+  <rect x="88" y="16" width="64" height="6" rx="3" fill="#1c1c1c"/>
+  
+  <text x="28" y="62" fill="#EDEDED" font-size="19" font-weight="700">Quick chat</text>
+  <rect x="136" y="46" width="76" height="22" rx="11" fill="#EA3B2A" fill-opacity=".14" stroke="#EA3B2A" stroke-opacity=".6"/>
+  <text x="174" y="61" text-anchor="middle" fill="#FF6B5E" font-size="10" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">MEETING</text>
+  <text x="28" y="88" fill="#A6A6A6" font-size="11.5">Open until the vote ends.</text>
+  <g font-size="12.5" fill="#EDEDED">
+    <rect x="28" y="106" width="184" height="40" rx="10" fill="#141414" stroke="#2a2a2a"/><text x="40" y="131">Task done in Electrical.</text>
+    <rect x="28" y="154" width="184" height="40" rx="10" fill="#141414" stroke="#2a2a2a"/><text x="40" y="179">I have no information.</text>
+    <rect x="28" y="202" width="184" height="40" rx="10" fill="#141414" stroke="#2a2a2a"/><text x="40" y="227">Someone was near Reactor.</text>
+    <rect x="28" y="250" width="184" height="40" rx="10" fill="#141414" stroke="#2a2a2a"/><text x="40" y="275">Vote them, I'm confident.</text>
+    <rect x="28" y="298" width="184" height="40" rx="10" fill="#141414" stroke="#2a2a2a"/><text x="40" y="323">Skip this round.</text>
+  </g>
+  <rect x="28" y="356" width="184" height="40" rx="10" fill="#0B0B0B" stroke="#EA3B2A" stroke-opacity=".5" stroke-dasharray="4 4"/>
+  <text x="120" y="381" text-anchor="middle" fill="#8A8A8A" font-size="11.5">Free text &amp; DMs: blocked</text>
+  <rect x="88" y="438" width="64" height="4" rx="2" fill="#333"/>
+
+</svg><figcaption><b>Meeting quick chat</b>Only approved phrases, only during a meeting.</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <h2>A vocabulary built to be safe, not silent</h2>
+        <p>Every quick-chat phrase in the default set is pre-screened to carry gameplay information, never identity or positional secrets — and it's only unlocked during the right part of the game.</p>
+      </div>
+
+      <div class="phrase-grid">
+        <div class="phrase">Task done in Electrical.</div>
+        <div class="phrase">I saw a body — who are we voting?</div>
+        <div class="phrase">Skip this round.</div>
+        <div class="phrase">I have no information.</div>
+        <div class="phrase">Someone was near Reactor.</div>
+        <div class="phrase">Vote them, I'm confident.</div>
+        <div class="phrase">I was doing tasks alone.</div>
+        <div class="phrase blocked">Meet me in the Discord call</div>
+        <div class="phrase blocked">Check your DMs</div>
+        <div class="phrase blocked">It's [name], trust me</div>
+      </div>
+
+      <div class="phrase-legend">
+        <span><span class="legend-dot" style="background:var(--panel-2); border:1px solid var(--border);"></span>Approved — safe under lock</span>
+        <span><span class="legend-dot" style="background:var(--red); opacity:.6;"></span>Rejected during phrase review</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="regions">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Rolling out region by region</h2>
+        <p>A.T.S. is launching as three independently hosted regions, so lobbies stay close to the players in them.</p>
+      </div>
+
+      <div class="region-grid">
+        <div class="region">
+          <div class="region-code">NA-1</div>
+          <h3>USA</h3>
+          <div class="region-status"><span class="dot"></span>BETA FORMING</div>
+          <p>Priority region for North American tournament organizers and Discord communities running ranked lobbies.</p>
+        </div>
+        <div class="region">
+          <div class="region-code">EU-1</div>
+          <h3>Europe</h3>
+          <div class="region-status"><span class="dot"></span>BETA FORMING</div>
+          <p>Covers Western and Central European lobbies, built alongside early partner communities.</p>
+        </div>
+        <div class="region">
+          <div class="region-code">AS-1</div>
+          <h3>Asia</h3>
+          <div class="region-status"><span class="dot"></span>BETA FORMING</div>
+          <p>Focused on Southeast and East Asian competitive scenes, with regional server placement to follow demand.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="platforms">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Where A.T.S. actually runs</h2>
+        <p>Built for Windows first. Here's the honest status of everywhere else — no vague "coming soon" badges without a reason attached.</p>
+      </div>
+
+      <div class="platform-grid">
+        <div class="region">
+          <h3>Windows</h3>
+          <div class="region-status" style="color:var(--accent);"><span class="dot" style="background:var(--accent);"></span>AVAILABLE NOW</div>
+          <p>Full support: mutes flagged apps' audio and minimizes their windows automatically.</p>
+          <a class="dl-btn" href="https://github.com/alansticks28-code/Among-Us-Anti-Teaming-System-/releases/download/latest/ATS-Guard.exe" target="_blank" rel="noopener noreferrer">Download Now</a>
+          <p class="dl-caption">ATS-Guard.exe — if Windows warns the file is unsigned, tap More info, then Run anyway</p>
+        </div>
+        <div class="region">
+          <h3>Linux</h3>
+          <div class="region-status" style="color:var(--accent);"><span class="dot" style="background:var(--accent);"></span>AVAILABLE NOW</div>
+          <p>Same mute + minimize behavior via PulseAudio/PipeWire and xdotool.</p>
+          <a class="dl-btn" href="https://github.com/alansticks28-code/Among-Us-Anti-Teaming-System-/releases/download/latest/ATS-Guard-Linux" target="_blank" rel="noopener noreferrer">Download Now</a>
+          <p class="dl-caption">ATS-Guard-Linux — run chmod +x on it first; needs pactl and xdotool installed</p>
+        </div>
+        <div class="region">
+          <h3>macOS</h3>
+          <div class="region-status"><span class="dot"></span>DETECTION + SYNC ONLY</div>
+          <p>Finds flagged apps and stays in sync with the host. Per-app audio muting has no equivalent built-in API on macOS yet.</p>
+          <a class="dl-btn" href="https://github.com/alansticks28-code/Among-Us-Anti-Teaming-System-/releases/download/latest/ATS-Guard-macOS.zip" target="_blank" rel="noopener noreferrer">Download Now</a>
+          <p class="dl-caption">ATS-Guard-macOS.zip — unzip it, then right-click the app and choose Open</p>
+        </div>
+        <div class="region">
+          <h3>Android</h3>
+          <div class="region-status"><span class="dot"></span>EXPERIMENTAL</div>
+          <p>No app can mute another app's audio on Android. Instead, an Accessibility Service detects a flagged app coming to the foreground and sends you straight back to Among Us.</p>
+          <a class="dl-btn" href="https://github.com/alansticks28-code/Among-Us-Anti-Teaming-System-/releases/download/latest/ATS-Guard.apk" target="_blank" rel="noopener noreferrer">Download Now</a>
+          <p class="dl-caption">ATS-Guard.apk — if Play Protect blocks it, tap More details, then Install anyway. If asked, allow installs from this browser. After installing, turn on A.T.S under Accessibility (on Android 13+: App info, three-dot menu, Allow restricted settings)</p>
+        </div>
+        <div class="region">
+          <h3>iOS</h3>
+          <div class="region-status"><span class="dot"></span>EXPERIMENTAL — SOURCE ONLY</div>
+          <p>Uses Apple's own Screen Time API to shield chosen apps during the game — the one sanctioned way to do this on iOS, not a workaround.</p>
+          <a class="dl-btn" href="https://github.com/alansticks28-code/Among-Us-Anti-Teaming-System-/releases/download/latest/ATS-Guard-iOS-source.zip" target="_blank" rel="noopener noreferrer">Download Now</a>
+          <p class="dl-caption">Source code only — an iPhone app needs Apple signing (paid developer account) and Apple's Family Controls approval</p>
+        </div>
+      </div>
+      <p class="dl-fallback">A button not opening? All files are also on the <a href="https://github.com/alansticks28-code/Among-Us-Anti-Teaming-System-/releases/tag/latest" target="_blank" rel="noopener noreferrer">downloads page</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Simple plans for every lobby</h2>
+        <p>Start free. Pro and Max are coming for bigger games and tournaments.</p>
+      </div>
+      <div class="plans">
+        <div class="plan">
+          <h3>Free</h3>
+          <p class="plan-for">For friends and casual lobbies.</p>
+          <div class="plan-price"><b>$0</b><span>forever</span></div>
+          <ul>
+            <li>Mute and lock for one region (USA, Europe or Asia)</li>
+            <li>Lobbies of up to 10 players</li>
+            <li>Default safe quick-chat set</li>
+            <li>Windows, Linux, Android and iOS apps</li>
+            <li>Host controls the game phase</li>
+          </ul>
+          <a class="plan-btn" href="#platforms">Download free</a>
+        </div>
+        <div class="plan featured">
+          <span class="plan-tag">MOST POPULAR</span>
+          <h3>Pro</h3>
+          <p class="plan-for">For regular hosts and communities.</p>
+          <div class="plan-price"><b>$2.99</b><span>/ month</span></div>
+          <ul>
+            <li class="prev">Everything in Free, plus:</li>
+            <li>All three regions: USA, Europe and Asia</li>
+            <li>Lobbies of up to 15 players</li>
+            <li>Custom quick-chat phrases and host settings</li>
+            <li>Choose which apps get blocked</li>
+            <li>Saved lobby presets</li>
+          </ul>
+          <span class="plan-btn soon" aria-disabled="true">Pro is coming soon</span>
+        </div>
+        <div class="plan">
+          <h3>Max</h3>
+          <p class="plan-for">For tournaments and large servers.</p>
+          <div class="plan-price"><b>$13.99</b><span>/ month</span></div>
+          <ul>
+            <li class="prev">Everything in Pro, plus:</li>
+            <li>Tournament mode with multiple lobbies at once</li>
+            <li>Violation log: who opened a blocked app, and when</li>
+            <li>Co-hosts and referee roles</li>
+            <li>Priority servers in every region</li>
+            <li>Priority support</li>
+          </ul>
+          <span class="plan-btn soon" aria-disabled="true">Max is coming soon</span>
+        </div>
+      </div>
+      <p class="plans-note">Paid plans are not open yet. Everything in Free works today, and nothing here charges you.</p>
+    </div>
+  </section>
+
+  <section id="beta">
+    <div class="wrap">
+      <div class="cta-band">
+        <div>
+          <h2>Running a competitive lobby?</h2>
+          <p>We're onboarding tournament hosts and community organizers first. Tell us your region and we'll reach out as your beta opens up.</p>
+        </div>
+        <a href="mailto:beta@ats-project.gg?subject=A.T.S.%20beta%20access" class="btn-primary">Request beta access</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <span>A.T.S. — Anti-Teaming System. Independent fan-made project, not affiliated with Innersloth.</span>
+    <div class="footer-links">
+      <a href="#how">How it works</a>
+      <a href="#platforms">Platforms</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#regions">Regions</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
